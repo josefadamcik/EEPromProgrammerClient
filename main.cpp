@@ -1,6 +1,7 @@
 #include <iostream>
 #include <boost/program_options.hpp>
-//#include <serial/serial.h"
+#include <serial/serial.h>
+
 using namespace std;
 namespace po = boost::program_options;
 
