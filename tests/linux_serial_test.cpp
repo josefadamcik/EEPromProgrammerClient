@@ -1,26 +1,7 @@
-/* To run these tests you need to change the define below to the serial port
- * with a loop back device attached.
- *
- * Alternatively you could use an Arduino:
-
-void setup()
-{
- Serial.begin(115200);
-}
-
-void loop()
-{
- while (Serial.available() > 0) {
-   Serial.write(Serial.read());
- }
-}
-
-*/
-
 #include <string>
 #include "gtest/gtest.h"
 #include "gmock/gmock-matchers.h"
-#include "../src/core/eepromprog.hpp"
+#include "core/Application.hpp"
 
 #include <boost/bind.hpp>
 
@@ -59,7 +40,7 @@ namespace {
             }
         }
 
-        Eepromprog eepromprog;
+        Application eepromprog;
         int master_fd;
         int slave_fd;
         char name[100];
@@ -77,12 +58,8 @@ namespace {
         testing::internal::CaptureStdout();
         eepromprog.connect(name, 57600);
         std::string output = testing::internal::GetCapturedStdout();
-        ASSERT_TRUE(true);
-//        ASSERT_THAT(output, ::testing::HasSubstr("Is the serial port open? Yes."));
-//        std::cout << output << std::endl;
+        ASSERT_THAT(output, ::testing::HasSubstr("Is the serial port open? Yes."));
     }
-
-
 
 }  // namespace
 

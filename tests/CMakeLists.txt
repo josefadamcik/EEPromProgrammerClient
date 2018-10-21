@@ -10,7 +10,10 @@ set_property(
 # gtest
 # find_package(GTest REQUIRED)
 
-add_executable(AllTests simplegtest.cpp linux_serial_test.cpp)
+add_executable(AllTests
+        simplegtest.cpp
+        linux_serial_test.cpp
+        EEPromProgControllerSerialTest.cpp)
 target_link_libraries(AllTests gmock gmock_main EepromProgCore)
 target_link_libraries(AllTests util)
 

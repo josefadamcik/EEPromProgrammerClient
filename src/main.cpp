@@ -1,12 +1,12 @@
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <core/eepromprog.hpp>
+#include <core/Application.hpp>
 
 using namespace std;
 namespace po = boost::program_options;
 
 int main(int argc, char *argv[]) {
-    Eepromprog eeprom_programmer(cout);
+    Application eeprom_programmer(cout);
     po::options_description desc("Usage:");
     desc.add_options()
         ("help,h", "produce help message")
