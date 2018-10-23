@@ -97,29 +97,53 @@ namespace {
 
     TEST_F(EEPromProgControllerSerialTest, TestReadCommandProcessesResult) {
         const int expectedCharCount = 1 + 4 /* command, address in hex*/;
-        char buf[expectedCharCount] = "";
-        string result = "abcd:  00 01 02 03 04 05 06 07  FF FE FD FC FB FA F9 F8\nl";
+        string mock_result_line = "abcd:  00 01 02 03 04 05 06 07  FF FE FD FC FB FA F9 F8\n";
         std::vector<unsigned char> expected_parsed_result{
             0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
             0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8
         };
 
-        write(master_fd, result.c_str(), result.length());
+        write(master_fd, mock_result_line.c_str(), mock_result_line.length());
 
         auto parsed_result = controller->send_cmd_read(0xABCD);
-
 
         EXPECT_EQ(parsed_result->size(), expected_parsed_result.size());
         EXPECT_EQ(*parsed_result, expected_parsed_result);
     }
+
+
+    TEST_F(EEPromProgControllerSerialTest, TestSendDumpCommand) {
+        const int expectedCharCount = 1 + 2 /* command, address in hex*/;
+        char buf[expectedCharCount] = "";
+
+        controller->send_cmd_dump_segment(0x11);
+
+        ssize_t read_count = read(master_fd, buf, expectedCharCount);
+
+        EXPECT_EQ(read_count, expectedCharCount);
+        EXPECT_EQ(string(buf, expectedCharCount), string("d11"));
+    }
+
+    TEST_F(EEPromProgControllerSerialTest, TestDumpCommandProcessesResult) {
+        string mock_result_line = "abcd:  00 01 02 03 04 05 06 07  FF FE FD FC FB FA F9 F8\n";
+        int mock_result_count = 16;
+        std::vector<unsigned char> expected_parsed_result{
+                0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+                0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8
+        };
+
+        for (int i = 0; i < mock_result_count; i++) {
+            write(master_fd, mock_result_line.c_str(), mock_result_line.length());
+        }
+        auto result = controller->send_cmd_dump_segment(0x11);
+
+
+        //one item for each row of output. Normally this would be 16 rows
+        EXPECT_EQ(result->size(), mock_result_count);
+        for (int i = 0; i < mock_result_count; i++) {
+            EXPECT_EQ(result->at(i).size(), expected_parsed_result.size());
+            EXPECT_EQ(result->at(i), expected_parsed_result);
+        }
+    }
 }  // namespace
 
-//int main(int argc, char **argv) {
-//    try {
-//        ::testing::InitGoogleTest(&argc, argv);
-//        return RUN_ALL_TESTS();
-//    } catch (std::exception &e) {
-//        std::cerr << "Unhandled Exception: " << e.what() << std::endl;
-//    }
-//    return 1;
-//}

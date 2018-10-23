@@ -1,5 +1,6 @@
 #include "array"
 #include "memory"
+#include "vector"
 
 //
 // Created by josef on 21.10.18.
@@ -18,7 +19,7 @@ public:
     /**
     * @param segment - two most significand bytes of address
     */
-    virtual void
+    virtual std::unique_ptr<std::vector<std::vector<unsigned char>>>
     send_cmd_dump_segment(unsigned int segment) = 0;
     /**
      * Read 16 bytes from EEPROM

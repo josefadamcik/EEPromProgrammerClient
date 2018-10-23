@@ -6,6 +6,8 @@
 #define EEPROMPROGCLIENT_EEPROMPROGCONTROLLERSERIAL_HPP
 
 
+static const int expected_size = 16;
+
 #include <memory>
 #include <serial/serial.h>
 #include "EEPromProgController.hpp"
@@ -17,7 +19,7 @@ public:
     void
     send_cmd_help() override;
 
-    void
+    std::unique_ptr<std::vector<std::vector<unsigned char>>>
     send_cmd_dump_segment(unsigned int segment) override;
 
     std::unique_ptr<std::vector<unsigned char>>
@@ -29,6 +31,8 @@ public:
 
 private:
     std::unique_ptr<serial::Serial> serial;
+
+    void parse_read_line_to_vector(const std::string &line, std::vector<unsigned char> &result);
 };
 
 
