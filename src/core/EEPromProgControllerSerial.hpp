@@ -20,7 +20,7 @@ public:
     void
     send_cmd_dump_segment(unsigned int segment) override;
 
-    const std::array<unsigned char, 16>
+    std::unique_ptr<std::vector<unsigned char>>
     send_cmd_read(unsigned int address) override;
 
     void

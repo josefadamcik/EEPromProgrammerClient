@@ -4,7 +4,7 @@
 #include "core/EEPromProgControllerSerial.hpp"
 #include <memory>
 #include <serial/serial.h>
-
+#include <array>
 #include <boost/bind.hpp>
 
 #if defined(__linux__)
@@ -41,6 +41,16 @@ namespace {
             controller.reset();
         }
 
+        ssize_t ReadPty(char * buffer, size_t size) {
+            ssize_t read_count = 0;
+            char onechar_buff[1] = "";
+            while (read_count < size) {
+                read_count += read(master_fd, onechar_buff, 1);
+                buffer[read_count - 1] = onechar_buff[0];
+            }
+            return read_count;
+        }
+
         std::unique_ptr<EEPromProgControllerSerial> controller;
         int master_fd;
         int slave_fd;
@@ -50,43 +60,57 @@ namespace {
 
     TEST_F(EEPromProgControllerSerialTest, TestSendHelpCommand) {
         char buf[1] = "";
-        testing::internal::CaptureStdout();
 
         controller->send_cmd_help();
 
         read(master_fd, buf, 1);
-        std::string output = testing::internal::GetCapturedStdout();
 
-        ASSERT_EQ(string(buf), string("h"));
+        EXPECT_EQ(string(buf), string("h"));
     }
 
 
     TEST_F(EEPromProgControllerSerialTest, TestSendWriteCommand) {
-        const int expectedCharCount = 1 + 4 /* command, address in hex */ + 16 * 2 /*2 char hex per byte*/;
-        char buf[expectedCharCount] = "";
-        testing::internal::CaptureStdout();
+        const int expected_char_count = 1 + 4 /* command, address in hex */ + 16 * 2 /*2 char hex per byte*/;
+        char buf[expected_char_count] = "";
 
         controller->send_cmd_write(0xABCD, {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF});
 
-        ssize_t read_count = read(master_fd, buf, expectedCharCount);
-        std::string output = testing::internal::GetCapturedStdout();
+        auto  read_count = ReadPty(buf, expected_char_count);
 
-        ASSERT_EQ(read_count, expectedCharCount);
-        ASSERT_EQ(string(buf, expectedCharCount), string("wabcd000102030405060708090a0b0c0d0e0f"));
+        EXPECT_EQ(read_count, expected_char_count);
+        EXPECT_EQ(string(buf, read_count), string("wabcd000102030405060708090a0b0c0d0e0f"));
     }
+
+
 
     TEST_F(EEPromProgControllerSerialTest, TestSendReadCommand) {
         const int expectedCharCount = 1 + 4 /* command, address in hex*/;
         char buf[expectedCharCount] = "";
-        testing::internal::CaptureStdout();
 
         controller->send_cmd_read(0xABCD);
 
         ssize_t read_count = read(master_fd, buf, expectedCharCount);
-        std::string output = testing::internal::GetCapturedStdout();
 
-        ASSERT_EQ(read_count, expectedCharCount);
-        ASSERT_EQ(string(buf, expectedCharCount), string("rabcd"));
+        EXPECT_EQ(read_count, expectedCharCount);
+        EXPECT_EQ(string(buf, expectedCharCount), string("rabcd"));
+    }
+
+    TEST_F(EEPromProgControllerSerialTest, TestReadCommandProcessesResult) {
+        const int expectedCharCount = 1 + 4 /* command, address in hex*/;
+        char buf[expectedCharCount] = "";
+        string result = "abcd:  00 01 02 03 04 05 06 07  FF FE FD FC FB FA F9 F8\nl";
+        std::vector<unsigned char> expected_parsed_result{
+            0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+            0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8
+        };
+
+        write(master_fd, result.c_str(), result.length());
+
+        auto parsed_result = controller->send_cmd_read(0xABCD);
+
+
+        EXPECT_EQ(parsed_result->size(), expected_parsed_result.size());
+        EXPECT_EQ(*parsed_result, expected_parsed_result);
     }
 }  // namespace
 

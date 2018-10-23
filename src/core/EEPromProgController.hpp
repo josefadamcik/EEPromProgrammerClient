@@ -14,6 +14,7 @@ const static int read_buffer_size = 16;
 class EEPromProgController {
 public:
     virtual void send_cmd_help() = 0;
+
     /**
     * @param segment - two most significand bytes of address
     */
@@ -24,8 +25,9 @@ public:
      * @param address
      * @return
      */
-    virtual const std::array<unsigned char, read_buffer_size>
+    virtual std::unique_ptr<std::vector<unsigned char>>
     send_cmd_read(unsigned int address) = 0;
+
     /**
      * Writes 16bytes to EEPROM
      * @param address
