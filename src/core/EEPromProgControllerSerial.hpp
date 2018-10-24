@@ -6,7 +6,7 @@
 #define EEPROMPROGCLIENT_EEPROMPROGCONTROLLERSERIAL_HPP
 
 
-static const int expected_size = 16;
+
 
 #include <memory>
 #include <serial/serial.h>

@@ -12,6 +12,16 @@
 const static int write_buffer_size = 16;
 const static int read_buffer_size = 16;
 
+class EEPromProgCtrlError: public std::logic_error {
+    public:
+    explicit
+    EEPromProgCtrlError(const std::string& msg) : std::logic_error(msg) {};
+};
+
+/**
+ * An interface for a facade for remote device. Allows
+ * client to call commands. Implementation will use serial
+ */
 class EEPromProgController {
 public:
     virtual void send_cmd_help() = 0;

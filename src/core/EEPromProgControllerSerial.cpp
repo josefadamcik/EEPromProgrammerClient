@@ -11,8 +11,10 @@
 #include <regex>
 #include <stdexcept>
 
-
 using std::string;
+
+static const int read_bytes_per_row = 16;
+static const int read_lines_per_segment = 16;
 
 
 unsigned char hex_to_num(unsigned char hex) {
@@ -44,15 +46,16 @@ void EEPromProgControllerSerial::send_cmd_help() {
 std::unique_ptr<std::vector<std::vector<unsigned char>>>
 EEPromProgControllerSerial::send_cmd_dump_segment(unsigned int segment) {
     serial->write(str( boost::format("d%1$02x") % segment));
-    auto result = std::make_unique<std::vector<std::vector<unsigned char>>>();
-    int expected_line_count = 16;
-    int expected_byte_count = 16;
+    auto result = std::make_unique<std::vector<std::vector<unsigned char>>>(read_lines_per_segment);
+    for( auto& val: *result) {
+        val.resize(read_bytes_per_row);
 
-    for (int i = 0; i < expected_line_count; i++) {//we expect 16 lines
-        (*result)[i].resize(expected_byte_count);
+    }
+    for (int i = 0; i < read_lines_per_segment; i++) {//we expect 16 lines
+        std::cout << std::endl;
         string line;
         serial->readline(line);
-        parse_read_line_to_vector(line, (*result)[i]);
+        parse_read_line_to_vector(line, result->at(i));
     }
 
     return std::move(result);
@@ -95,6 +98,10 @@ void EEPromProgControllerSerial::parse_read_line_to_vector(const std::string &li
         return hex_to_num(static_cast<unsigned char>(str_byte[0])) << 4
                | hex_to_num(static_cast<unsigned char>(str_byte[1]));
     });
+
+    if (result.size() != read_bytes_per_row) {
+        throw EEPromProgCtrlError("Invalid response from programmer");
+    }
 
 }
 

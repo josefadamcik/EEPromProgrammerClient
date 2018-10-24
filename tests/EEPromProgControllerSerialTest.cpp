@@ -41,7 +41,7 @@ namespace {
             controller.reset();
         }
 
-        ssize_t ReadPty(char * buffer, size_t size) {
+        ssize_t readFromMockSerial(char *buffer, size_t size) {
             ssize_t read_count = 0;
             char onechar_buff[1] = "";
             while (read_count < size) {
@@ -49,6 +49,11 @@ namespace {
                 buffer[read_count - 1] = onechar_buff[0];
             }
             return read_count;
+        }
+
+        void arrangeMockReadResultLine() {
+            string mock_result_line = "abcd:  00 01 02 03 04 05 06 07  FF FE FD FC FB FA F9 F8\n";
+            write(master_fd, mock_result_line.c_str(), mock_result_line.length());
         }
 
         std::unique_ptr<EEPromProgControllerSerial> controller;
@@ -75,7 +80,7 @@ namespace {
 
         controller->send_cmd_write(0xABCD, {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF});
 
-        auto  read_count = ReadPty(buf, expected_char_count);
+        auto  read_count = readFromMockSerial(buf, expected_char_count);
 
         EXPECT_EQ(read_count, expected_char_count);
         EXPECT_EQ(string(buf, read_count), string("wabcd000102030405060708090a0b0c0d0e0f"));
@@ -87,6 +92,8 @@ namespace {
         const int expectedCharCount = 1 + 4 /* command, address in hex*/;
         char buf[expectedCharCount] = "";
 
+        arrangeMockReadResultLine();
+
         controller->send_cmd_read(0xABCD);
 
         ssize_t read_count = read(master_fd, buf, expectedCharCount);
@@ -96,20 +103,31 @@ namespace {
     }
 
     TEST_F(EEPromProgControllerSerialTest, TestReadCommandProcessesResult) {
-        const int expectedCharCount = 1 + 4 /* command, address in hex*/;
-        string mock_result_line = "abcd:  00 01 02 03 04 05 06 07  FF FE FD FC FB FA F9 F8\n";
         std::vector<unsigned char> expected_parsed_result{
             0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
             0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8
         };
 
-        write(master_fd, mock_result_line.c_str(), mock_result_line.length());
+        arrangeMockReadResultLine();
 
         auto parsed_result = controller->send_cmd_read(0xABCD);
 
         EXPECT_EQ(parsed_result->size(), expected_parsed_result.size());
         EXPECT_EQ(*parsed_result, expected_parsed_result);
     }
+
+    TEST_F(EEPromProgControllerSerialTest, TestReadCommandFailsWhenIncompleteData) {
+        string mock_result_line = "abcd:  00 01 02 03 04 05 06 07  FF FE F\n";
+        write(master_fd, mock_result_line.c_str(), mock_result_line.length());
+
+        try {
+            auto parsed_result = controller->send_cmd_read(0xABCD);
+            FAIL();
+        } catch (EEPromProgCtrlError& exc) {
+            EXPECT_TRUE(1);
+        }
+    }
+
 
 
     TEST_F(EEPromProgControllerSerialTest, TestSendDumpCommand) {
@@ -125,7 +143,6 @@ namespace {
     }
 
     TEST_F(EEPromProgControllerSerialTest, TestDumpCommandProcessesResult) {
-        string mock_result_line = "abcd:  00 01 02 03 04 05 06 07  FF FE FD FC FB FA F9 F8\n";
         int mock_result_count = 16;
         std::vector<unsigned char> expected_parsed_result{
                 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
@@ -133,7 +150,7 @@ namespace {
         };
 
         for (int i = 0; i < mock_result_count; i++) {
-            write(master_fd, mock_result_line.c_str(), mock_result_line.length());
+            arrangeMockReadResultLine();
         }
         auto result = controller->send_cmd_dump_segment(0x11);
 
@@ -143,6 +160,29 @@ namespace {
         for (int i = 0; i < mock_result_count; i++) {
             EXPECT_EQ(result->at(i).size(), expected_parsed_result.size());
             EXPECT_EQ(result->at(i), expected_parsed_result);
+        }
+    }
+
+    TEST_F(EEPromProgControllerSerialTest, TestDumpCommandFailsWhenIncompleteData) {
+        int mock_result_count = 16;
+        std::vector<unsigned char> expected_parsed_result{
+                0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+                0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8
+        };
+        string mock_result_line = "abcd:  00 01 02 03 04 05 06 07  FF FE F\n";
+        for (int i = 0; i < mock_result_count; i++) {
+            if (i % 2 == 0) {
+                arrangeMockReadResultLine();
+            } else {
+                write(master_fd, mock_result_line.c_str(), mock_result_line.length());
+            }
+        }
+
+        try {
+            auto parsed_result = controller->send_cmd_dump_segment(0x11);
+            FAIL();
+        } catch (EEPromProgCtrlError& exc) {
+            EXPECT_TRUE(1);
         }
     }
 }  // namespace
