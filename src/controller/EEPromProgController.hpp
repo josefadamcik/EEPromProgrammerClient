@@ -9,8 +9,8 @@
 #ifndef EEPROMPROGCLIENT_EEPROMPROGCONTROLLER_HPP
 #define EEPROMPROGCLIENT_EEPROMPROGCONTROLLER_HPP
 
-const static int write_buffer_size = 16;
-const static int read_buffer_size = 16;
+const static int writeBufferSize = 16;
+const static int readBufferSize = 16;
 
 class EEPromProgCtrlError: public std::logic_error {
     public:
@@ -24,20 +24,20 @@ class EEPromProgCtrlError: public std::logic_error {
  */
 class EEPromProgController {
 public:
-    virtual void send_cmd_help() = 0;
+    virtual void sendCmdHelp() = 0;
 
     /**
     * @param segment - two most significand bytes of address
     */
     virtual std::unique_ptr<std::vector<std::vector<unsigned char>>>
-    send_cmd_dump_segment(unsigned int segment) = 0;
+    sendCmdDumpSegment(unsigned int segment) = 0;
     /**
      * Read 16 bytes from EEPROM
      * @param address
      * @return
      */
     virtual std::unique_ptr<std::vector<unsigned char>>
-    send_cmd_read(unsigned int address) = 0;
+    sendCmdRead(unsigned int address) = 0;
 
     /**
      * Writes 16bytes to EEPROM
@@ -45,9 +45,13 @@ public:
      * @param buffer
      */
     virtual void
-    send_cmd_write(unsigned int address, const std::array<unsigned char, write_buffer_size> &buffer) = 0;
+    sendCmdWrite(unsigned int address, const std::array<unsigned char, writeBufferSize> &buffer) = 0;
     virtual
     ~EEPromProgController() = default;
+
+    virtual
+    bool isConnected() = 0;
+
 };
 
 

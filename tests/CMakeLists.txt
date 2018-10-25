@@ -13,7 +13,9 @@ set_property(
 add_executable(AllTests
         simplegtest.cpp
         linux_serial_test.cpp
-        EEPromProgControllerSerialTest.cpp)
+        controller/EEPromProgControllerSerialTest.cpp
+        core/ApplicationTest.cpp
+        )
 target_link_libraries(AllTests gmock gmock_main EepromProgCore)
 target_link_libraries(AllTests util)
 

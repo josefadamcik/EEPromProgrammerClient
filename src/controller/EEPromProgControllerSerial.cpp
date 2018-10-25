@@ -30,7 +30,6 @@ unsigned char hex_to_num(unsigned char hex) {
 }
 
 
-
 EEPromProgControllerSerial::~EEPromProgControllerSerial() {
     serial.reset();
 }
@@ -39,62 +38,57 @@ EEPromProgControllerSerial::EEPromProgControllerSerial(std::unique_ptr<serial::S
         : serial(std::move(serial)) {}
 
 
-void EEPromProgControllerSerial::send_cmd_help() {
+void EEPromProgControllerSerial::sendCmdHelp() {
     serial->write("h");
 }
 
 std::unique_ptr<std::vector<std::vector<unsigned char>>>
-EEPromProgControllerSerial::send_cmd_dump_segment(unsigned int segment) {
-    serial->write(str( boost::format("d%1$02x") % segment));
+EEPromProgControllerSerial::sendCmdDumpSegment(unsigned int segment) {
+    serial->write(str(boost::format("d%1$02x") % segment));
     auto result = std::make_unique<std::vector<std::vector<unsigned char>>>(read_lines_per_segment);
-    for( auto& val: *result) {
-        val.resize(read_bytes_per_row);
-
-    }
     for (int i = 0; i < read_lines_per_segment; i++) {//we expect 16 lines
-        std::cout << std::endl;
         string line;
         serial->readline(line);
-        parse_read_line_to_vector(line, result->at(i));
+        parseReadLineToVector(line, result->at(i));
     }
 
     return std::move(result);
 }
 
 std::unique_ptr<std::vector<unsigned char>>
-EEPromProgControllerSerial::send_cmd_read(unsigned int address) {
-    serial->write(str( boost::format("r%1$04x") % address));
+EEPromProgControllerSerial::sendCmdRead(unsigned int address) {
+    serial->write(str(boost::format("r%1$04x") % address));
     string line;
     serial->readline(line);
     auto result = std::make_unique<std::vector<unsigned char>>();
 
-    parse_read_line_to_vector(line, *result);
+    parseReadLineToVector(line, *result);
 
     return std::move(result);
 }
 
 
-
-void EEPromProgControllerSerial::send_cmd_write(unsigned int address,
-                                                const std::array<unsigned char, write_buffer_size> &buffer) {
-    serial->write(str( boost::format("w%1$04x") % address));
+void EEPromProgControllerSerial::sendCmdWrite(unsigned int address,
+                                              const std::array<unsigned char, writeBufferSize> &buffer) {
+    serial->write(str(boost::format("w%1$04x") % address));
     for (const auto &val : buffer) {
-        serial->write(str(boost::format("%1$02x") % (int)val));
+        serial->write(str(boost::format("%1$02x") % (int) val));
     }
 }
 
-void EEPromProgControllerSerial::parse_read_line_to_vector(const std::string &line,
-                                                           std::vector<unsigned char> &result) {
+void EEPromProgControllerSerial::parseReadLineToVector(const std::string &line,
+                                                       std::vector<unsigned char> &result) {
     auto str_buffer = std::vector<string>();
     //abcd:  AB AB AB AB AB AB AB AB  AB AB AB AB AB AB AB AB
-    std::regex dump_regex("\\s+([a-fA-F0-9]{2})"); //matches just pairs of hex bytes, shouldn't match the address at the beginning
+    //matches just pairs of hex bytes, shouldn't match the address at the beginning
+    std::regex dump_regex("\\s+([a-fA-F0-9]{2})");
     std::smatch dump_match;
 
-    std::copy( std::sregex_token_iterator(line.begin(), line.end(), dump_regex, 1),
-               std::sregex_token_iterator(),
-               std::back_inserter(str_buffer));
+    std::copy(std::sregex_token_iterator(line.begin(), line.end(), dump_regex, 1),
+              std::sregex_token_iterator(),
+              std::back_inserter(str_buffer));
 
-    std::transform(str_buffer.begin(), str_buffer.end(), std::back_inserter(result), [] (string str_byte) {
+    std::transform(str_buffer.begin(), str_buffer.end(), std::back_inserter(result), [](string str_byte) {
         return hex_to_num(static_cast<unsigned char>(str_byte[0])) << 4
                | hex_to_num(static_cast<unsigned char>(str_byte[1]));
     });
@@ -104,4 +98,10 @@ void EEPromProgControllerSerial::parse_read_line_to_vector(const std::string &li
     }
 
 }
+
+bool EEPromProgControllerSerial::isConnected() {
+    return serial && serial->isOpen();
+}
+
+
 

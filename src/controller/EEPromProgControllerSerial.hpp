@@ -17,22 +17,23 @@ public:
     explicit EEPromProgControllerSerial(std::unique_ptr<serial::Serial> serial);
     ~EEPromProgControllerSerial() override;
     void
-    send_cmd_help() override;
+    sendCmdHelp() override;
 
     std::unique_ptr<std::vector<std::vector<unsigned char>>>
-    send_cmd_dump_segment(unsigned int segment) override;
+    sendCmdDumpSegment(unsigned int segment) override;
 
     std::unique_ptr<std::vector<unsigned char>>
-    send_cmd_read(unsigned int address) override;
+    sendCmdRead(unsigned int address) override;
 
     void
-    send_cmd_write(unsigned int address, const std::array<unsigned char, write_buffer_size> &buffer) override;
+    sendCmdWrite(unsigned int address, const std::array<unsigned char, writeBufferSize> &buffer) override;
 
-
+    bool
+    isConnected() override;
 private:
     std::unique_ptr<serial::Serial> serial;
 
-    void parse_read_line_to_vector(const std::string &line, std::vector<unsigned char> &result);
+    void parseReadLineToVector(const std::string &line, std::vector<unsigned char> &result);
 };
 
 

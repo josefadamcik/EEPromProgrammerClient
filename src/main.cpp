@@ -6,7 +6,7 @@ using namespace std;
 namespace po = boost::program_options;
 
 int main(int argc, char *argv[]) {
-    Application eeprom_programmer(cout);
+    Application eepromProgrammer(cout);
     po::options_description desc("Usage:");
     desc.add_options()
         ("help,h", "produce help message")
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 
     if (vm.count("list")) {
         cout << "Listing serial interfaces:" << endl;
-        eeprom_programmer.enumerate_ports();
+        eepromProgrammer.enumeratePorts();
         return 0;
     }
 
@@ -44,8 +44,8 @@ int main(int argc, char *argv[]) {
         //110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 128000 and 256000
         int baudrate = vm["baudrate"].as<int>();
         cout << "Baudrate: " << baudrate << endl;
-        eeprom_programmer.connect(vm["interface"].as<string>(), baudrate);
-        eeprom_programmer.do_stuff();
+        eepromProgrammer.connect(vm["interface"].as<string>(), baudrate);
+        eepromProgrammer.doStuff();
         return 0;
     }
 

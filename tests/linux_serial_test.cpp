@@ -19,11 +19,10 @@ namespace {
     class SerialTests : public ::testing::Test {
     protected:
         void SetUp() override {
-            if (openpty(&master_fd, &slave_fd, name, NULL, NULL) == -1) {
+            if (openpty(&master_fd, &slave_fd, name, nullptr, nullptr) == -1) {
                 perror("openpty");
                 exit(127);
             }
-
 
 
             ASSERT_TRUE(master_fd > 0);
@@ -35,12 +34,12 @@ namespace {
         }
 
         void TearDown() override {
-            if (eepromprog.is_connected()) {
-                eepromprog.disconnect();
+            if (application.isConnected()) {
+                application.disconnect();
             }
         }
 
-        Application eepromprog;
+        Application application;
         int master_fd;
         int slave_fd;
         char name[100];
@@ -48,17 +47,10 @@ namespace {
 
     TEST_F(SerialTests, TestEnumeratePorts) {
         testing::internal::CaptureStdout();
-        eepromprog.enumerate_ports();
+        application.enumeratePorts();
         std::string output = testing::internal::GetCapturedStdout();
         ASSERT_THAT(output, ::testing::HasSubstr("/dev/tty"));
         std::cout << output << std::endl;
-    }
-
-    TEST_F(SerialTests, TestConnect) {
-        testing::internal::CaptureStdout();
-        eepromprog.connect(name, 57600);
-        std::string output = testing::internal::GetCapturedStdout();
-        ASSERT_THAT(output, ::testing::HasSubstr("Is the serial port open? Yes."));
     }
 
 }  // namespace

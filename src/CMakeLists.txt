@@ -1,7 +1,9 @@
 add_library(EepromProgCore
         core/Application.hpp
         core/Application.cpp
-        core/EEPromProgController.hpp core/EEPromProgControllerSerial.cpp core/EEPromProgControllerSerial.hpp)
+        controller/EEPromProgController.hpp
+        controller/EEPromProgControllerSerial.cpp
+        controller/EEPromProgControllerSerial.hpp controller/testing/EEPromProgControllerMock.hpp)
 
 target_include_directories(
     EepromProgCore
