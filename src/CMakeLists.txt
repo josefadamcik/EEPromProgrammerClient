@@ -3,7 +3,7 @@ add_library(EepromProgCore
         core/Application.cpp
         controller/EEPromProgController.hpp
         controller/EEPromProgControllerSerial.cpp
-        controller/EEPromProgControllerSerial.hpp controller/testing/EEPromProgControllerMock.hpp)
+        controller/EEPromProgControllerSerial.hpp controller/testing/EEPromProgControllerMock.hpp filereader/DataFileReader.hpp)
 
 target_include_directories(
     EepromProgCore
@@ -11,7 +11,7 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-add_executable(EEPROMProgClient main.cpp)
+add_executable(EEPROMProgClient main.cpp filereader/HexDataFileReader.cpp filereader/HexDataFileReaderTest.hpp filereader/DataFileItem.hpp)
 
 target_link_libraries(EepromProgCore
   PRIVATE 

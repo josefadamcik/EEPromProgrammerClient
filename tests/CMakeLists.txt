@@ -15,7 +15,7 @@ add_executable(AllTests
         linux_serial_test.cpp
         controller/EEPromProgControllerSerialTest.cpp
         core/ApplicationTest.cpp
-        )
+        filereader/HexDataFileReaderTest.cpp)
 target_link_libraries(AllTests gmock gmock_main EepromProgCore)
 target_link_libraries(AllTests util)
 
