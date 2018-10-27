@@ -52,6 +52,9 @@ public:
     virtual
     bool isConnected() = 0;
 
+    virtual
+    void waitForAck() = 0;
+
 };
 
 

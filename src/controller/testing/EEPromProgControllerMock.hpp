@@ -13,6 +13,8 @@ class EEPromProgControllerMock: public EEPromProgController {
     public:
     MOCK_METHOD0(sendCmdHelp, void());
 
+    MOCK_METHOD0(waitForAck, void());
+
     MOCK_METHOD0(isConnected, bool());
 
     MOCK_METHOD1(sendCmdDumpSegment, std::unique_ptr<std::vector<std::vector<unsigned char>>>(unsigned int

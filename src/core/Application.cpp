@@ -35,6 +35,9 @@ void Application::connect(string interface, int baudrate) {
         throw ConnectionException("Failed to open serial");
     }
     std::unique_ptr<EEPromProgController> new_controller = make_unique<EEPromProgControllerSerial>(std::move(new_serial));
+
+    new_controller->waitForAck();
+
     eePromProgController = std::move(new_controller);
 
 }

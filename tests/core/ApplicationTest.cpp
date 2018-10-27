@@ -30,6 +30,11 @@ TEST(ApplicationTest, ApplicationWritesWholedHexFile) {
             .WillRepeatedly(Return(true))
             ;
 
+    EXPECT_CALL(*rawMockPtr, waitForAck)
+            .Times(AnyNumber())
+            ;
+
+
     EXPECT_CALL(*rawMockPtr, sendCmdWrite)
         .Times(Exactly(3))
         ;
