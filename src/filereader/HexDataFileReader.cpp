@@ -99,6 +99,12 @@ DataFileItem HexDataFileReader::processLine(const string &line) {
         sum += readByte;
     }
 
+    if (dataLength < 16) {
+        for (unsigned int i = dataLength; dataLength < 16; i++) {
+            readBytes[i] = 0;
+        }
+    }
+
     //compute checksum
     unsigned int computedCheckSum = (~(sum & 0xFF) + 1) & 0xFF;
 

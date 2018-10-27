@@ -125,3 +125,15 @@ TEST(HexDataFileReaderTest, ReadsCorrectData) {
     EXPECT_EQ(result[0].data, expectedResult);
 }
 
+
+TEST(HexDataFileReaderTest, ReadsDataShorterRowIsFilledWithZeroes) {
+    HexDataFileReader fileReader(baseDataPath + "simledata_eof_short.hex");
+    std::array<unsigned char, 16> expectedResult = {
+            0xC3, 0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            };
+
+    auto result = fileReader.read();
+    ASSERT_EQ(result.size(), 1);
+    EXPECT_EQ(result[0].data, expectedResult);
+}
