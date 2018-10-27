@@ -5,6 +5,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 #include <controller/EEPromProgControllerSerial.hpp>
+#include <filereader/HexDataFileReader.hpp>
 
 using namespace std;
 
@@ -73,10 +74,6 @@ void Application::disconnect() {
 }
 
 
-void Application::doStuff() {
-
-}
-
 Application::~Application() {
     if (isConnected()) {
         disconnect();
@@ -85,6 +82,14 @@ Application::~Application() {
 
 void
 Application::programFromHexfile(std::basic_string<char, std::char_traits<char>, std::allocator<char>> filename) {
+    if (!isConnected()) {
+        throw ConnectionException("Not connected to serial.");
+    }
+    HexDataFileReader reader(filename);
+    auto const& data = reader.read();
+    for (auto const& dataItem : data) {
+        eePromProgController->sendCmdWrite(dataItem.address, dataItem.data);
+    }
 
 }
 

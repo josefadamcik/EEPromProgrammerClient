@@ -20,8 +20,6 @@ public:
 
     void connect(std::string interface, int baudrate);
 
-    void doStuff();
-
     bool isConnected();
 
     void disconnect();
