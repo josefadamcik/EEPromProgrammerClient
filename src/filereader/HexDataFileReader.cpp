@@ -100,7 +100,7 @@ DataFileItem HexDataFileReader::processLine(const string &line) {
     }
 
     if (dataLength < 16) {
-        for (unsigned int i = dataLength; dataLength < 16; i++) {
+        for (unsigned int i = dataLength; i < 16; i++) {
             readBytes[i] = 0;
         }
     }
