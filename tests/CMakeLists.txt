@@ -15,9 +15,13 @@ add_executable(AllTests
         linux_serial_test.cpp
         controller/EEPromProgControllerSerialTest.cpp
         core/ApplicationTest.cpp
-        filereader/HexDataFileReaderTest.cpp)
+        filereader/HexDataFileReaderTest.cpp
+        )
+
 target_link_libraries(AllTests gmock gmock_main EepromProgCore)
 target_link_libraries(AllTests util)
 
-add_test(AllTestsInFoo simplegtest)
-
+add_test(NAME AllTestsInFoo
+        COMMAND AllTests
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )

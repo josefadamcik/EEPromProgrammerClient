@@ -1,9 +1,16 @@
 add_library(EepromProgCore
         core/Application.hpp
         core/Application.cpp
+        core/hex_to_num.hpp
         controller/EEPromProgController.hpp
         controller/EEPromProgControllerSerial.cpp
-        controller/EEPromProgControllerSerial.hpp controller/testing/EEPromProgControllerMock.hpp filereader/DataFileReader.hpp)
+        controller/EEPromProgControllerSerial.hpp
+        controller/testing/EEPromProgControllerMock.hpp
+        filereader/DataFileItem.hpp
+        filereader/DataFileReader.hpp
+        filereader/HexDataFileReader.cpp
+        filereader/HexDataFileReader.hpp
+        core/hex_to_num.cpp)
 
 target_include_directories(
     EepromProgCore
@@ -11,7 +18,10 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-add_executable(EEPROMProgClient main.cpp filereader/HexDataFileReader.cpp filereader/HexDataFileReaderTest.hpp filereader/DataFileItem.hpp)
+add_executable(EEPROMProgClient
+        main.cpp
+
+        )
 
 target_link_libraries(EepromProgCore
   PRIVATE 
@@ -22,26 +32,5 @@ target_link_libraries(EEPROMProgClient
     Boost::boost Boost::program_options EepromProgCore
 )
 
-
-# SImple tests for executable
-
-add_test(noparam_helpdisplayed EEPROMProgClient)
-set_property(
-    TEST noparam_helpdisplayed
-    PROPERTY PASS_REGULAR_EXPRESSION "^Usage:"
-)
-
-
-add_test(paramhelp_helpdisplayed EEPROMProgClient "--help")
-set_property(
-    TEST paramhelp_helpdisplayed
-    PROPERTY PASS_REGULAR_EXPRESSION "^Usage:"
-)
-
-add_test(paramfile_filenamedisplayed EEPROMProgClient "--file=hi.hex --interface=tty0")
-set_property(
-    TEST paramfile_filenamedisplayed
-    PROPERTY PASS_REGULAR_EXPRESSION "hi.hex"
-)
 
 

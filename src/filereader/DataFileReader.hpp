@@ -2,12 +2,17 @@
 // Created by josef on 25.10.18.
 //
 
-#import <vector>
+#include <vector>
 #include "DataFileItem.hpp"
 
 #ifndef EEPROMPROGCLIENT_DATAFILEREADER_HPP
 #define EEPROMPROGCLIENT_DATAFILEREADER_HPP
 
+
+class DataFileReaderException: public std::logic_error {
+public:
+    explicit DataFileReaderException(const std::string& msg): std::logic_error{msg} {};
+};
 
 /**
  * Reads file and provides list of DataFileItems (address + 16bytes of data)

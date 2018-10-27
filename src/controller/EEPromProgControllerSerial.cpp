@@ -10,24 +10,12 @@
 #include <iostream>
 #include <regex>
 #include <stdexcept>
+#include <core/hex_to_num.hpp>
 
 using std::string;
 
 static const int read_bytes_per_row = 16;
 static const int read_lines_per_segment = 16;
-
-
-unsigned char hex_to_num(unsigned char hex) {
-    if (hex >= 'a' && hex <= 'f') {
-        return static_cast<unsigned char>(hex - 'a' + 10);
-    } else if (hex >= 'A' && hex <= 'F') {
-        return static_cast<unsigned char>(hex - 'A' + 10);
-    } else if (hex >= '0' && hex <= '9') {
-        return static_cast<unsigned char>(hex - '0');
-    } else {
-        return 0;
-    }
-}
 
 
 EEPromProgControllerSerial::~EEPromProgControllerSerial() {
@@ -89,8 +77,8 @@ void EEPromProgControllerSerial::parseReadLineToVector(const std::string &line,
               std::back_inserter(str_buffer));
 
     std::transform(str_buffer.begin(), str_buffer.end(), std::back_inserter(result), [](string str_byte) {
-        return hex_to_num(static_cast<unsigned char>(str_byte[0])) << 4
-               | hex_to_num(static_cast<unsigned char>(str_byte[1]));
+        return hexToNum(static_cast<unsigned char>(str_byte[0])) << 4
+               | hexToNum(static_cast<unsigned char>(str_byte[1]));
     });
 
     if (result.size() != read_bytes_per_row) {
