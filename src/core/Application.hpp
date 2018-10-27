@@ -26,6 +26,8 @@ public:
 
     void disconnect();
 
+    void programFromHexfile(std::basic_string<char, std::char_traits<char>, std::allocator<char>> filename);
+
     class ConnectionException : public std::runtime_error {
     public:
         explicit ConnectionException(const std::string& msg) : std::runtime_error(msg) {}
@@ -34,7 +36,9 @@ private:
     std::ostream &out;
     std::unique_ptr<EEPromProgController> eePromProgController;
     void dumpLines(const std::vector<std::string> &lines);
-    FRIEND_TEST(ApplicationTest, TestDumpBlock);
+
+
+    FRIEND_TEST(ApplicationTest, ApplicationWritesWholedHexFile);
 };
 
 #endif

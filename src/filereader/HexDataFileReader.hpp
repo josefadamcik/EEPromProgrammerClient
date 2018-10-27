@@ -13,8 +13,8 @@
 
 /**
  * Reads file in Intel HEX format ( https://en.wikipedia.org/wiki/Intel_HEX )
- * Partial implementation:
- * - max data length is 0x10
+ * This is only a partial implementation:
+ * - max data length is 0x10 (16 bytes)
  * - only data end EOF record types
  */
 class HexDataFileReader: public DataFileReader {

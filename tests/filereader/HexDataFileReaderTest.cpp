@@ -125,6 +125,3 @@ TEST(HexDataFileReaderTest, ReadsCorrectData) {
     EXPECT_EQ(result[0].data, expectedResult);
 }
 
-
-
-//TODO: data read properly
