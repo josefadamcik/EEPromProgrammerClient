@@ -56,6 +56,16 @@ namespace {
             write(masterFd, mockResultLine.c_str(), mockResultLine.length());
         }
 
+        void arrangeAckReadResultLine() {
+            string ackLine = "=DONE\n";
+            write(masterFd, ackLine.c_str(), ackLine.length());
+        }
+
+        void arrangeErrorReadResultLine() {
+            string ackLine = "=E:error\n";
+            write(masterFd, ackLine.c_str(), ackLine.length());
+        }
+
         void arrangeMultipleMockReadResultLines(int count) {
             for (int i = 0; i < count; i++) {
                 arrangeMockReadResultLine();
@@ -73,6 +83,7 @@ namespace {
     TEST_F(EEPromProgControllerSerialTest, TestSendHelpCommand) {
         char buf[1] = "";
 
+        arrangeAckReadResultLine();
         controller->sendCmdHelp();
 
         read(masterFd, buf, 1);
@@ -85,6 +96,7 @@ namespace {
         const int expectedCharCount = 1 + 4 /* command, address in hex */ + 16 * 2 /*2 char hex per byte*/;
         char buf[expectedCharCount] = "";
 
+        arrangeAckReadResultLine();
         controller->sendCmdWrite(0xABCD,
                                  {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF});
 
@@ -94,6 +106,19 @@ namespace {
         EXPECT_EQ(string(buf, readCount), string("wabcd000102030405060708090a0b0c0d0e0f"));
     }
 
+    TEST_F(EEPromProgControllerSerialTest, TestWriteCommandFailsWhenErrorInsteadOfAck) {
+        const int expectedCharCount = 1 + 4 /* command, address in hex */ + 16 * 2 /*2 char hex per byte*/;
+        char buf[expectedCharCount] = "";
+
+        arrangeErrorReadResultLine();
+        try {
+            controller->sendCmdWrite(0xABCD,
+                                     {0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF});
+            FAIL();
+        } catch (EEPromProgCtrlError& exc) {
+            SUCCEED();
+        }
+    }
 
 
     TEST_F(EEPromProgControllerSerialTest, TestSendReadCommand) {
@@ -101,6 +126,7 @@ namespace {
         char buf[expectedCharCount] = "";
 
         arrangeMockReadResultLine();
+        arrangeAckReadResultLine();
 
         controller->sendCmdRead(0xABCD);
 
@@ -116,7 +142,9 @@ namespace {
             0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8
         };
 
+
         arrangeMockReadResultLine();
+        arrangeAckReadResultLine();
 
         auto parsedResult = controller->sendCmdRead(0xABCD);
 
@@ -127,7 +155,7 @@ namespace {
     TEST_F(EEPromProgControllerSerialTest, TestReadCommandFailsWhenIncompleteData) {
         string mockResultLine = "abcd:  00 01 02 03 04 05 06 07  FF FE F\n";
         write(masterFd, mockResultLine.c_str(), mockResultLine.length());
-
+        arrangeAckReadResultLine();
         try {
             controller->sendCmdRead(0xABCD);
             FAIL();
@@ -143,6 +171,7 @@ namespace {
         char buf[expectedCharCount] = "";
 
         arrangeMultipleMockReadResultLines(16);
+        arrangeAckReadResultLine();
 
         controller->sendCmdDumpSegment(0x11);
 
@@ -159,8 +188,9 @@ namespace {
         };
         int mockResultCount = 16;
         arrangeMultipleMockReadResultLines(mockResultCount);
-        auto result = controller->sendCmdDumpSegment(0x11);
+        arrangeAckReadResultLine();
 
+        auto result = controller->sendCmdDumpSegment(0x11);
 
         //one item for each row of output. Normally this would be 16 rows
         EXPECT_EQ(result->size(), mockResultCount);

@@ -28,6 +28,7 @@ EEPromProgControllerSerial::EEPromProgControllerSerial(std::unique_ptr<serial::S
 
 void EEPromProgControllerSerial::sendCmdHelp() {
     serial->write("h");
+    waitForAck();
 }
 
 std::unique_ptr<std::vector<std::vector<unsigned char>>>
@@ -40,6 +41,8 @@ EEPromProgControllerSerial::sendCmdDumpSegment(unsigned int segment) {
         parseReadLineToVector(line, result->at(i));
     }
 
+    waitForAck();
+
     return std::move(result);
 }
 
@@ -51,6 +54,7 @@ EEPromProgControllerSerial::sendCmdRead(unsigned int address) {
     auto result = std::make_unique<std::vector<unsigned char>>();
 
     parseReadLineToVector(line, *result);
+    waitForAck();
 
     return std::move(result);
 }
@@ -62,6 +66,8 @@ void EEPromProgControllerSerial::sendCmdWrite(unsigned int address,
     for (const auto &val : buffer) {
         serial->write(str(boost::format("%1$02x") % (int) val));
     }
+
+    waitForAck();
 }
 
 void EEPromProgControllerSerial::parseReadLineToVector(const std::string &line,
@@ -89,6 +95,42 @@ void EEPromProgControllerSerial::parseReadLineToVector(const std::string &line,
 
 bool EEPromProgControllerSerial::isConnected() {
     return serial && serial->isOpen();
+}
+
+//
+//const vector<string> Application::wait_for_done() {
+//    vector<string> lines;
+//    bool done = false;
+//    bool error = false;
+//    do {
+//        string line_buffer;
+//        size_t read = serial->readline(line_buffer);
+//        out << read << " " << line_buffer << endl;
+//        if (read > 0) {
+//            done = boost::starts_with(line_buffer, "=DONE");
+//            if (!done) {
+//                lines.push_back(line_buffer);
+//                error = boost::starts_with(line_buffer, "=E:");
+//            }
+//        }
+//    } while (!done && !error);
+//    return lines;
+//}
+
+void EEPromProgControllerSerial::waitForAck() {
+    bool done = false;
+    do {
+        string lineBuffer;
+        size_t read = serial->readline(lineBuffer);
+        std::cout << "read: " << read << " " << lineBuffer << std::endl;
+        if (read > 0) {
+            done = boost::starts_with(lineBuffer, "=DONE");
+            if (boost::starts_with(lineBuffer, "=E:")) {
+                throw EEPromProgCtrlError("Programmer returned error: " + lineBuffer);
+            }
+        }
+    } while (!done);
+
 }
 
 

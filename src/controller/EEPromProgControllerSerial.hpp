@@ -34,6 +34,8 @@ private:
     std::unique_ptr<serial::Serial> serial;
 
     void parseReadLineToVector(const std::string &line, std::vector<unsigned char> &result);
+
+    void waitForAck();
 };
 
 

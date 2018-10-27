@@ -45,26 +45,6 @@ void Application::dumpLines(const vector<string> &lines) {
     }
 }
 
-//
-//const vector<string> Application::wait_for_done() {
-//    vector<string> lines;
-//    bool done = false;
-//    bool error = false;
-//    do {
-//        string line_buffer;
-//        size_t read = serial->readline(line_buffer);
-//        out << read << " " << line_buffer << endl;
-//        if (read > 0) {
-//            done = boost::starts_with(line_buffer, "=DONE");
-//            if (!done) {
-//                lines.push_back(line_buffer);
-//                error = boost::starts_with(line_buffer, "=E:");
-//            }
-//        }
-//    } while (!done && !error);
-//    return lines;
-//}
-
 bool Application::isConnected() {
     return eePromProgController && eePromProgController->isConnected();
 }
