@@ -2,6 +2,7 @@ add_library(EepromProgCore
         core/Application.hpp
         core/Application.cpp
         core/hex_to_num.hpp
+        core/hex_to_num.cpp
         controller/EEPromProgController.hpp
         controller/EEPromProgControllerSerial.cpp
         controller/EEPromProgControllerSerial.hpp
@@ -10,7 +11,7 @@ add_library(EepromProgCore
         filereader/DataFileReader.hpp
         filereader/HexDataFileReader.cpp
         filereader/HexDataFileReader.hpp
-        core/hex_to_num.cpp)
+        )
 
 target_include_directories(
     EepromProgCore
@@ -18,16 +19,15 @@ target_include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-add_executable(EEPROMProgClient
+add_executable(eepromprog
         main.cpp
-
         )
 
 target_link_libraries(EepromProgCore
   PRIVATE 
     serial Boost::boost 
 )
-target_link_libraries(EEPROMProgClient 
+target_link_libraries(eepromprog
   PRIVATE 
     Boost::boost Boost::program_options EepromProgCore
 )
